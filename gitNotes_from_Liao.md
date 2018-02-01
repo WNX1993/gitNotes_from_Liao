@@ -78,6 +78,11 @@ Git的版本库中存了很多东西，其中最重要的就是称为stage（或
 进一步解释一些命令：
 - `git add`实际上是把文件添加到暂存区
 - `git commit`实际上是把暂存区的所有内容提交到当前分支
+
+### 管理修改
+第一次修改->git add->第二次修改->git commit
+在工作区的第一次修改放入暂存区，准备提交，但是在工作区的第二次修改并没有放入暂存区，所以git commit只负责把暂存区的修改提交了，因此第二次修改不会被提交。
+
 ### 撤销修改
 #### 丢弃工作区的修改
 ```bash
@@ -90,8 +95,8 @@ $ git checkout -- <file>
 总之，就是让这个文件回到最近一次git commit或git add时的状态。
 
 #### 丢弃暂存区的修改
-分两步：
-第一步，把暂存区的修改撤销掉(unstage)，重新放回工作区：
+修改只是添加到了暂存区，还没有提交，分两步：
+第一步，把暂存区的修改撤销掉(unstage)，重新放回工作区（把暂存区的修改回退到工作区）：
 ```bash
 $ git reset HEAD <file>
 ```
@@ -115,16 +120,24 @@ $ rm <file>
 $ git add <file>
 ```
 #### 进一步的解释
-Q：比如执行了`rm text.txt` 误删了怎么恢复？
-A：执行`git checkout -- text.txt` 把版本库的东西重新写回工作区就行了
+新文件text.txt已提交，若执行了`rm text.txt`，git会发现工作区和版本库不一致，有两种选择：
+1. 确实要从版本库中删除该文件，则：
+```bash
+$ git rm text.txt
+$ git commit -m "remove text.txt"
+```
+2. 删错了，因为版本库里还有，所以可以轻松地把误删的文件恢复到最新版本：
+```bash
+$ git checkout -- text.txt
+```
+`git checkout`其实是用版本库里的版本替换工作区的版本，无论工作区是修改还是删除，都可以“一键还原”
+
 Q：如果执行了`git rm text.txt`我们会发现工作区的text.txt也删除了，怎么恢复？
 A：先撤销暂存区修改，重新放回工作区，然后再从版本库写回到工作区
 ```bash
 $ git reset head text.txt
 $ git checkout -- text.txt
 ```
-Q：如果真的想从版本库里面删除文件怎么做？
-A：执行`git commit -m "delete text.txt"`，提交后最新的版本库将不包含这个文件
 
 ### 远程仓库
 #### 创建SSH Key
